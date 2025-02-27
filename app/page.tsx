@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
-import PanelHome, { IDataMp3 } from "./panelHome";
-import axios from "axios";
+import PanelHome from "./panelHome";
 
 const Home = async () => {
   const cookieStore = await cookies();
@@ -13,12 +12,8 @@ const Home = async () => {
     console.log("gaada");
     return;
   }
-
-  const res = await axios.get(
-    "https://a3df-103-134-246-102.ngrok-free.app/payment-gateway/getavailablepaymentmethod/all"
-  );
-  console.log(res?.data);
   const datas = JSON.parse(mp3!.value);
+  console.log(datas);
   return <PanelHome dataMp3={datas} />;
 };
 

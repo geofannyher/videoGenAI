@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   const redirecturl = "https://developers.google.com/oauthplayground";
   const client_secret = "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";
   const refreshToken =
-    "1//04yn5rNtFWRD9CgYIARAAGAQSNwF-L9Irzg6r92umYLSuqcXHVMEUKwJq6ZJbjXVkz8hFsUTZnkLlYTwegcHyMa_BbcWh8XGOLHc";
+    "1//04tT7Kt8N1LIiCgYIARAAGAQSNwF-L9Ir7JVFOnJArcbOEtbjGMgT5frZnbyybEItXADQ04kJK44AvbBWDy22UaBqv3uLE40UGWo";
   try {
     const oauth2Client = new google.auth.OAuth2(
       client_id,
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
       auth: oauth2Client,
     });
     // Folder ID Google Drive
-    const folderOpening = "1pq8f71X5sSu-8DMGiuty-UP6jfrbFlpM";
+    const folderOpening = "1wSCPvg5gNcVsLu0mtU1lMdG0TEIU1BGN";
     const folderExplain = "1cXczYQdsfVb7AQitQzv7pw1tP8K_Dwet";
 
     // Ambil daftar file dari folder
@@ -41,13 +41,13 @@ export async function GET(req: Request) {
         kategori: "Opening",
         id: file.id,
         name: file.name,
-        url: `https://drive.google.com/uc?id=${file.id}`,
+        url: `https://drive.google.com/uc?export=download&id=${file.id}`,
       }));
       const fileEx = resOpening.data.files.map((file) => ({
         kategori: "Penjelasan",
         id: file.id,
         name: file.name,
-        url: `https://drive.google.com/uc?id=${file.id}`,
+        url: `https://drive.google.com/uc?export=download&id=${file.id}`,
       }));
       const combinedFiles = [...fileOp, ...fileEx];
 
