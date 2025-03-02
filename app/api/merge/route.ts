@@ -1,71 +1,101 @@
-import ffmpeg from "fluent-ffmpeg";
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 import { NextResponse } from "next/server";
+import { spawn } from "child_process";
 
-export async function POST(req: Request) {
+// Tipe untuk menangani file upload
+export type MergeResponse = {
+  success: boolean;
+  message: string;
+  fileName?: string;
+  filePath?: string;
+};
+
+// Fungsi untuk menangani penggabungan audio & video dengan FFmpeg
+const mergeAudioVideo = (
+  videoPath: string,
+  audioPath: string,
+  outputPath: string
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const process = spawn("ffmpeg", [
+      "-i",
+      videoPath,
+      "-i",
+      audioPath,
+      "-c:v",
+      "copy",
+      "-c:a",
+      "aac",
+      "-map",
+      "0:v:0",
+      "-map",
+      "1:a:0",
+      outputPath,
+    ]);
+
+    process.on("close", (code) => {
+      if (code === 0) resolve(outputPath);
+      else reject(new Error(`FFmpeg exited with error code: ${code}`));
+    });
+
+    process.on("error", (err) => {
+      reject(new Error(`FFmpeg failed: ${err.message}`));
+    });
+  });
+};
+
+export async function POST(req: Request): Promise<NextResponse<MergeResponse>> {
   try {
-    const { videoUrl, audioUrl } = await req.json();
+    const uploadDir = path.join(process.cwd(), "upload");
 
-    if (!videoUrl || !audioUrl) {
-      return NextResponse.json({
-        success: false,
-        message: "Both video and audio URLs are required.",
-      });
+    // Pastikan folder upload ada
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    // Parsing FormData dari request
+    const formData = await req.formData();
+    const videoFile = formData.get("video") as File;
+    const audioFile = formData.get("audio") as File;
+
+    if (!videoFile || !audioFile) {
+      return NextResponse.json(
+        { success: false, message: "Both video and audio files are required." },
+        { status: 400 }
+      );
     }
 
-    const uploadDir = `./upload`;
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir);
-    }
+    // Simpan file ke dalam folder upload
+    const videoPath = path.join(uploadDir, videoFile.name);
+    const audioPath = path.join(uploadDir, audioFile.name);
 
-    // Convert relative path to absolute path for video
-    const absoluteVideoPath = path.join(process.cwd(), "public", videoUrl);
+    await Promise.all([
+      fs.writeFile(videoPath, Buffer.from(await videoFile.arrayBuffer())),
+      fs.writeFile(audioPath, Buffer.from(await audioFile.arrayBuffer())),
+    ]);
 
-    // Verify video file exists
-    if (!fs.existsSync(absoluteVideoPath)) {
-      return NextResponse.json({
-        success: false,
-        message: `Video file not found at: ${absoluteVideoPath}`,
-      });
-    }
-
-    const files = fs.readdirSync(uploadDir);
-    const videoCount = files.filter(
-      (file) => file.startsWith("video") && file.endsWith(".mp4")
-    ).length;
-
+    // Buat output file dengan nama unik
+    const files = await fs.readdir(uploadDir);
+    const videoCount = files.filter((file) => file.startsWith("video")).length;
     const outputFileName = `video${videoCount + 1}.mp4`;
-    const outputPathWithSubtitle = path.join(uploadDir, outputFileName);
+    const outputPath = path.join(uploadDir, outputFileName);
 
-    const mergeAudioVideo = () =>
-      new Promise((resolve, reject) => {
-        ffmpeg(absoluteVideoPath) // Use absolute path here
-          .input(audioUrl)
-          .output(outputPathWithSubtitle)
-          .outputOptions("-c:v copy")
-          .outputOptions("-c:a aac")
-          .outputOptions("-map 0:v:0")
-          .outputOptions("-map 1:a:0")
-          .on("end", () => resolve(outputPathWithSubtitle))
-          .on("error", (err) => reject(err))
-          .run();
-      });
-
-    await mergeAudioVideo();
+    // Proses merge video + audio
+    await mergeAudioVideo(videoPath, audioPath, outputPath);
 
     return NextResponse.json({
       success: true,
       message: `Video and audio merged successfully! Saved as ${outputFileName}`,
       fileName: outputFileName,
-      filePath: outputPathWithSubtitle,
+      filePath: outputPath,
     });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return NextResponse.json({
+  } catch (error) {
+    console.error("Unexpected server error:", error);
+    return NextResponse.json(
+      {
         success: false,
-        message: error.message || "An error occurred.",
-      });
-    }
+        message: "An unexpected error occurred on the server.",
+      },
+      { status: 500 }
+    );
   }
 }
