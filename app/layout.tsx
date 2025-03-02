@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { QueryClient } from "@tanstack/react-query";
 import QueryProvider from "./components/QueryProvider";
 
 const geistSans = localFont({
@@ -25,7 +24,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const query = new QueryClient();
   return (
     <html lang="en">
       <body

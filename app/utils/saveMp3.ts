@@ -1,8 +1,10 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { IDataMp3 } from "../panelHome";
-
+export interface IDataMp3 {
+  kategori: string;
+  url: string;
+}
 export async function saveMp3(data: IDataMp3[]) {
   const cookieStore = await cookies();
   const jsonData = JSON.stringify(data);

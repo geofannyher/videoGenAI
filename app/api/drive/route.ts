@@ -2,7 +2,7 @@ import { google } from "googleapis";
 import { NextResponse } from "next/server";
 
 // Handler API
-export async function GET(req: Request) {
+export async function GET() {
   const client_id =
     "148956138712-ajoslb9n944npvvovs4ul6t2gpcuv6ur.apps.googleusercontent.com";
   const redirecturl = "https://developers.google.com/oauthplayground";

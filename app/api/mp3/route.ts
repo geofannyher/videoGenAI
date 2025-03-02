@@ -5,9 +5,15 @@ import axios from "axios";
 export async function POST(req: Request) {
   const { text } = await req.json();
 
-  const response: any = await textToSpeech({
+  const response = (await textToSpeech({
     text,
-  });
+  })) as {
+    data: string;
+  };
+  if (!response) {
+    return NextResponse.json("gaada");
+  }
+
   const mainBlob = new Blob([response?.data], {
     type: "audio/mpeg",
   });

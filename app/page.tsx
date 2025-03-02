@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import PanelHome from "./panelHome";
 
 const Home = async () => {
   const cookieStore = await cookies();
@@ -14,7 +13,8 @@ const Home = async () => {
   }
   const datas = JSON.parse(mp3!.value);
   console.log(datas);
-  return <PanelHome dataMp3={datas} />;
+  // return <PanelHome dataMp3={datas} />;
+  return <>Hallo</>;
 };
 
 export default Home;

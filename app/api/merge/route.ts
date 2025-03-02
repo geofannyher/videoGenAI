@@ -20,8 +20,8 @@ export async function POST(req: Request) {
     }
 
     // Convert relative path to absolute path for video
-    const absoluteVideoPath = path.join(process.cwd(), 'public', videoUrl);
-    
+    const absoluteVideoPath = path.join(process.cwd(), "public", videoUrl);
+
     // Verify video file exists
     if (!fs.existsSync(absoluteVideoPath)) {
       return NextResponse.json({
@@ -60,11 +60,12 @@ export async function POST(req: Request) {
       fileName: outputFileName,
       filePath: outputPathWithSubtitle,
     });
-  } catch (error: any) {
-    console.error("Error processing request:", error);
-    return NextResponse.json({
-      success: false,
-      message: error.message || "An error occurred.",
-    });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json({
+        success: false,
+        message: error.message || "An error occurred.",
+      });
+    }
   }
 }

@@ -61,11 +61,12 @@ export async function POST(req: Request) {
       fileName: outputFileName,
       filePath: outputPath,
     });
-  } catch (error: any) {
-    console.error("Error processing request:", error);
-    return NextResponse.json({
-      success: false,
-      message: error.message || "An error occurred.",
-    });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json({
+        success: false,
+        message: error.message,
+      });
+    }
   }
 }

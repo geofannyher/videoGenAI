@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
+interface videos {
+  kategori: string;
+  url: string;
+  name: string;
+}
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type");
@@ -14,7 +19,7 @@ export async function GET(req: Request) {
   }
 
   const videoPath = path.join(process.cwd(), "public", "videos", type);
-  const videos: any = [];
+  const videos: videos[] = [];
 
   try {
     // Read category folders (opening, penjelasan, etc.)
